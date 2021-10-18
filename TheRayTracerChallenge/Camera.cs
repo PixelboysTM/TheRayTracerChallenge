@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using TheRayTracerChallenge.Math;
+using TheRayTracerChallenge.Util;
 using Tuple = TheRayTracerChallenge.Math.Tuple;
 
 namespace TheRayTracerChallenge

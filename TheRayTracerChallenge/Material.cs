@@ -1,5 +1,7 @@
 ﻿using System;
 using TheRayTracerChallenge.Lights;
+using TheRayTracerChallenge.Pattern;
+using TheRayTracerChallenge.Shapes;
 using Tuple = TheRayTracerChallenge.Math.Tuple;
 
 namespace TheRayTracerChallenge
@@ -11,6 +13,7 @@ namespace TheRayTracerChallenge
         public float Diffuse { get; set; } = 0.9f;
         public float Specular { get; set; } = 0.9f;
         public float Shininess { get; set; } = 200f;
+        public StripePattern Pattern { get; set; } = null;
 
         public Material Copy => new()
             { Ambient = Ambient, Color = Color.Copy, Diffuse = Diffuse, Shininess = Shininess, Specular = Specular };
@@ -43,17 +46,23 @@ namespace TheRayTracerChallenge
 
         public static bool operator ==(Material left, Material right)
         {
-            return Equals(left, right);
+            return left.Equals(right);
         }
 
         public static bool operator !=(Material left, Material right)
         {
-            return !Equals(left, right);
+            return !(left == right);
         }
 
-        public Tuple Lighting(PointLight light, Tuple point, Tuple eyev, Tuple normalv, bool inShadow)
+        public Tuple Lighting(PointLight light, Tuple point, Tuple eyeV, Tuple normalV, bool inShadow, Shape obj)
         {
-            var effectiveColor = Color * light.Intensity;
+            Tuple color;
+            if (Pattern is not null)
+                color = Pattern.StripeAtObject(obj,point);
+            else
+                color = Color;
+            
+            var effectiveColor = color * light.Intensity;
 
             var lightv = (light.Position - point).Normalised();
 
@@ -62,13 +71,13 @@ namespace TheRayTracerChallenge
             var diffuse = Tuple.Color(0,0,0);
             var specular = Tuple.Color(0, 0, 0);
             
-            var lightDotNormal = Tuple.Dot(lightv, normalv);
+            var lightDotNormal = Tuple.Dot(lightv, normalV);
             if (!(lightDotNormal <0))
             {
                 diffuse = effectiveColor * Diffuse * lightDotNormal;
 
-                var reflectv = (-lightv).Reflect(normalv);
-                var reflectDotEye = Tuple.Dot(reflectv, eyev);
+                var reflectv = (-lightv).Reflect(normalV);
+                var reflectDotEye = Tuple.Dot(reflectv, eyeV);
 
                 if (reflectDotEye <= 0)
                 {

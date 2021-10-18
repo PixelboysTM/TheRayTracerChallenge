@@ -7,9 +7,9 @@ namespace TheRayTracerChallenge
     public class Intersection
     {
         public float t { get; set; }
-        public Sphere Object { get; set; }
+        public Shape Object { get; set; }
 
-        public Intersection(float t, Sphere obj)
+        public Intersection(float t, Shape obj)
         {
             this.t = t;
             Object = obj;
@@ -28,7 +28,7 @@ namespace TheRayTracerChallenge
             var comps = new Computations();
 
             comps.t = t;
-            comps.Object = new Sphere(Object);
+            comps.Object = Object;
 
             comps.Point = ray.Position(comps.t);
             comps.EyeV = -ray.Direction;

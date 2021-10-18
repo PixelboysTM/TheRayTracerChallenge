@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
-using System.Net.Mime;
 using Spectre.Console;
-using Color = System.Drawing.Color;
 using Tuple = TheRayTracerChallenge.Math.Tuple;
 
-namespace TheRayTracerChallenge
+namespace TheRayTracerChallenge.Util
 {
     public class Canvas
     {
@@ -59,7 +56,7 @@ namespace TheRayTracerChallenge
                 for (int y = 0; y < _data.GetLength(1); y++)
                 {
                     var c = _data[x, y];
-                    b.SetPixel(x,y, Color.FromArgb(255, (int)(c.Red*255), (int)(c.Green*255), (int)(c.Blue*255)));
+                    b.SetPixel(x,y, System.Drawing.Color.FromArgb(255, (int)(c.Red*255), (int)(c.Green*255), (int)(c.Blue*255)));
                 }
             }
 

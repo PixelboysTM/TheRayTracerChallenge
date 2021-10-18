@@ -3,6 +3,7 @@ using System.Text;
 using Spectre.Console;
 using TheRayTracerChallenge.Lights;
 using TheRayTracerChallenge.Math;
+using TheRayTracerChallenge.Pattern;
 using TheRayTracerChallenge.Shapes;
 using Tuple = TheRayTracerChallenge.Math.Tuple;
 
@@ -17,65 +18,71 @@ namespace TheRayTracerChallenge
             Console.OutputEncoding = Encoding.UTF8;
             AnsiConsole.Clear();
 
-            var floor = new Sphere
+            StripePattern pattern = new StripePattern(Tuple.Color(1, 0, 0), Tuple.Color(0, 1, 0));
+            pattern.Transform = Matrix4x4.Scaling(0.5f,1.25f,0.5f);
+
+            var floor = new Plane("Floor")
             {
-                Transform = Matrix4x4.Scaling(10,0.01f, 10),
                 Material = new Material
                 {
                     Color = Tuple.Color(1,0.9f,0.9f),
-                    Specular = 0
+                    Specular = 0,
+                    Pattern = pattern
                 }
             };
 
-            var leftWall = new Sphere
+            var leftWall = new Plane("leftWall")
             {
-                Transform = Matrix4x4.Translation(0,0,5) * Matrix4x4.RotationY(-Tuple.PI/4.0f) * Matrix4x4.RotationX(Tuple.PI/2.0f) * Matrix4x4.Scaling(10,0.01f, 10),
+                Transform = Matrix4x4.Translation(0,0,5) * Matrix4x4.RotationY(-Tuple.PI/4.0f) * Matrix4x4.RotationX(Tuple.PI/2.0f),
                 Material = floor.Material
             };
 
-            var rightWall = new Sphere
+            var rightWall = new Plane("rightWall")
             {
-                Transform = Matrix4x4.Translation(0,0,5) * Matrix4x4.RotationY(Tuple.PI/4.0f) * Matrix4x4.RotationX(Tuple.PI/2.0f) * Matrix4x4.Scaling(10,0.01f, 10),
+                Transform = Matrix4x4.Translation(0,0,5) * Matrix4x4.RotationY(Tuple.PI/4.0f) * Matrix4x4.RotationX(Tuple.PI/2.0f),
                 Material = floor.Material
             };
 
-            var middle = new Sphere
+            var middle = new Sphere("middle")
             {
-                Transform = Matrix4x4.Translation(-0.5f, 1, 0.5f) * Matrix4x4.Scaling(1,0.5f,0.01f),
+                Transform = Matrix4x4.Translation(-0.5f, 1, 0.5f) * Matrix4x4.Scaling(1,0.5f,0.5f),
                 Material = new Material
                 {
                     Color = Tuple.Color(0.1f, 1, 0.5f),
                     Diffuse = 0.7f,
-                    Specular = 0.3f
+                    Specular = 0.3f,
+                    Pattern = pattern
                 }
             };
 
-            var right = new Sphere
+            var right = new Sphere("right")
             {
                 Transform = Matrix4x4.Translation(1.5f, 0.5f, -0.5f) * Matrix4x4.Scaling(0.5f, 0.5f, 0.5f),
                 Material = new Material
                 {
                     Color = Tuple.Color(0.5f, 1, 0.1f),
                     Diffuse = 0.7f,
-                    Specular = 0.3f
+                    Specular = 0.3f,
+                    Pattern = pattern
                 }
             };
 
-            var left = new Sphere
+            var left = new Sphere("left")
             {
-                Transform = Matrix4x4.Translation(-1.5f, 0.33f, -0.75f) * Matrix4x4.Scaling(0.33f, 0.33f, 0.33f),
+                Transform = Matrix4x4.Translation(-2f, 0.33f, -0.75f) * Matrix4x4.Scaling(0.33f, 0.33f, 0.33f),
                 Material = new Material
                 {
                     Color = Tuple.Color(1f, 0.8f, 0.1f),
                     Diffuse = 0.7f,
-                    Specular = 0.3f
+                    Specular = 0.3f,
+                    Pattern = pattern
                 }
             };
 
             var w = new World(
                 new PointLight(Tuple.Point(-10,10,-10), Tuple.Color(1,1,1)),
                 floor, leftWall, rightWall, left, middle, right);
-            var c = new Camera(192*10, 108*10, Tuple.PI / 3)
+            var c = new Camera(192*2, 108*2, Tuple.PI / 3)
             {
                 Transform = Matrix4x4.ViewTransformation(Tuple.Point(0,1.5f, -5), Tuple.Point(0,1,0), Tuple.Vector(0,1,0))
             };
@@ -109,7 +116,7 @@ namespace TheRayTracerChallenge
                 {
                 ctx.Status = "Saving";
                 ctx.Spinner = Spinner.Known.Pong;
-                image.SaveToFile("img/Chapter8.png");
+                image.SaveToFile("img/Chapter10_2.png");
             });
             AnsiConsole.WriteLine("Finished ✔");
         }

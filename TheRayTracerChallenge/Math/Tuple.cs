@@ -4,6 +4,18 @@ namespace TheRayTracerChallenge.Math
 {
     public struct Tuple
     {
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = X.GetHashCode();
+                hashCode = (hashCode * 397) ^ Y.GetHashCode();
+                hashCode = (hashCode * 397) ^ Z.GetHashCode();
+                hashCode = (hashCode * 397) ^ W.GetHashCode();
+                return hashCode;
+            }
+        }
+
         public const float EPSILON = 0.00001f;
         public const float PI = MathF.PI;
         public float X { get; set; }

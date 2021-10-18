@@ -7,7 +7,7 @@ using Tuple = TheRayTracerChallenge.Math.Tuple;
 
 namespace TheRayTracerChallenge
 {
-    public class World : List<Sphere>
+    public class World : List<Shape>
     {
         public PointLight LightSource { get; set; } = null;
 
@@ -15,12 +15,12 @@ namespace TheRayTracerChallenge
         {
             
         }
-        public World(PointLight lightSource, IEnumerable<Sphere> collection) : base(collection)
+        public World(PointLight lightSource, IEnumerable<Shape> collection) : base(collection)
         {
             LightSource = lightSource;
         }
         
-        public World(PointLight lightSource, params Sphere[] collection) : base(collection)
+        public World(PointLight lightSource, params Shape[] collection) : base(collection)
         {
             LightSource = lightSource;
         }
@@ -36,7 +36,7 @@ namespace TheRayTracerChallenge
             Transform = Matrix4x4.Scaling(0.5f, 0.5f, 0.5f)
         });
 
-        public new bool Contains(Sphere item)
+        public new bool Contains(Shape item)
         {
             foreach (var sphere in this)
             {
@@ -61,7 +61,7 @@ namespace TheRayTracerChallenge
 
         public Tuple ShadeHit(Computations comps)
         {
-            return comps.Object.Material.Lighting(LightSource, comps.OverPoint, comps.EyeV, comps.NormalV, IsShadowed(comps.OverPoint));
+            return comps.Object.Material.Lighting(LightSource, comps.OverPoint, comps.EyeV, comps.NormalV, IsShadowed(comps.OverPoint), comps.Object);
         }
 
         public Tuple ColorAt(Ray ray)

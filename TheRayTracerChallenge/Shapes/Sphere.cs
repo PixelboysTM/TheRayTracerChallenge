@@ -4,34 +4,31 @@ using Tuple = TheRayTracerChallenge.Math.Tuple;
 
 namespace TheRayTracerChallenge.Shapes
 {
-    public class Sphere
+    public class Sphere : Shape
     {
-        public Matrix4x4 Transform { get; set; } = Matrix4x4.Identity;
-        public Material Material { get; set; } = new();
-        
-        public Sphere()
+        public Sphere(string name = "Sphere") : base(name)
         {
         }
 
-        public Sphere(Matrix4x4 transform)
+        public Sphere(Matrix4x4 transform) : base("Sphere")
         {
             Transform = transform;
         }
 
-        public Sphere(Sphere sphere)
+        public Sphere(Sphere sphere) : base(sphere.Name)
         {
             Transform = Matrix4x4.Identity * sphere.Transform;
             Material = sphere.Material.Copy;
         }
+        
+        
 
-        public Intersection[] Intersect(Ray ray)
+        protected override Intersection[] LocalIntersect(Ray ray)
         {
-            var ray2 = ray.Transform(Transform.Inverse);
-            
-            var sphereToRay = ray2.Origin - Tuple.Point(0, 0, 0);
+            var sphereToRay = ray.Origin - Tuple.Point(0, 0, 0);
 
-            var a = Tuple.Dot(ray2.Direction, ray2.Direction);
-            var b = 2 * Tuple.Dot(ray2.Direction, sphereToRay);
+            var a = Tuple.Dot(ray.Direction, ray.Direction);
+            var b = 2 * Tuple.Dot(ray.Direction, sphereToRay);
             var c = Tuple.Dot(sphereToRay, sphereToRay) - 1;
             var discriminant = b * b - 4 * a * c;
 
@@ -41,19 +38,22 @@ namespace TheRayTracerChallenge.Shapes
             var t1 = (-b - MathF.Sqrt(discriminant)) / (2 * a);
             var t2 = (-b + MathF.Sqrt(discriminant)) / (2 * a);
 
+            //WARNING: Not as in the book to remove acne
+            // if (t1 < 0.01f && MathF.Abs(t2) >= 0.01f)
+            //     return Intersection.Aggregate(new Intersection(t2, this));
+            // if (t2 < 0.01f && MathF.Abs(t1) >= 0.01f)
+            //     return Intersection.Aggregate(new Intersection(t1, this));
+            
             return Intersection.Aggregate(new Intersection(t1, this), new Intersection(t2, this));
+
         }
 
-        public Tuple NormalAt(Tuple point)
+        protected override Tuple LocalNormalAt(Tuple point)
         {
-            var objectPoint = Transform.Inverse * point;
-            var objectNormal = objectPoint - Tuple.Point(0, 0, 0);
-            var worldNormal = Transform.Inverse.Transpose * objectNormal;
-            worldNormal.W = 0;
-            return worldNormal.Normalised();
+            return point - Tuple.Point(0, 0, 0);
         }
 
-        protected bool Equals(Sphere other)
+        private bool Equals(Sphere other)
         {
             return Equals(Transform, other.Transform) && Equals(Material, other.Material);
         }

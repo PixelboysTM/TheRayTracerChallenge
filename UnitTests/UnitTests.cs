@@ -1,13 +1,17 @@
 using System;
 using System.Linq;
 using NUnit.Framework;
+using NUnit.Framework.Constraints;
 using SixLabors.ImageSharp.PixelFormats;
 using TheRayTracerChallenge;
 using TheRayTracerChallenge.Lights;
 using TheRayTracerChallenge.Math;
+using TheRayTracerChallenge.Pattern;
 using TheRayTracerChallenge.Shapes;
+using TheRayTracerChallenge.Util;
 using static TheRayTracerChallenge.Math.Tuple;
 using static TheRayTracerChallenge.Math.Matrix4x4;
+using Color = TheRayTracerChallenge.Util.Color;
 using Tuple = TheRayTracerChallenge.Math.Tuple;
 
 namespace UnitTests
@@ -1586,7 +1590,7 @@ namespace UnitTests
                 var eyev = Vector(0, 0, -1);
                 var normalv = Vector(0, 0, -1);
                 var light = new PointLight(Point(0, 0, -10), Color(1, 1, 1));
-                var result = m.Lighting(light, position, eyev, normalv, false);
+                var result = m.Lighting(light, position, eyev, normalv, false, new Sphere());
                 Assert.IsTrue(result == Color(1.9f, 1.9f, 1.9f));
             }
 
@@ -1595,7 +1599,7 @@ namespace UnitTests
                 var eyev = Vector(0, MathF.Sqrt(2) / 2.0f, MathF.Sqrt(2) / 2.0f);
                 var normalv = Vector(0, 0, -1);
                 var light = new PointLight(Point(0, 0, -10), Color(1, 1, 1));
-                var result = m.Lighting(light, position, eyev, normalv, false);
+                var result = m.Lighting(light, position, eyev, normalv, false, new Sphere());
                 Assert.IsTrue(result == Color(1.0f, 1.0f, 1.0f));
             }
 
@@ -1604,7 +1608,7 @@ namespace UnitTests
                 var eyev = Vector(0, 0, -1);
                 var normalv = Vector(0, 0, -1);
                 var light = new PointLight(Point(0, 10, -10), Color(1, 1, 1));
-                var result = m.Lighting(light, position, eyev, normalv, false);
+                var result = m.Lighting(light, position, eyev, normalv, false, new Sphere());
                 Assert.IsTrue(result == Color(0.7364f,0.7364f,0.7364f));
             }
 
@@ -1613,7 +1617,7 @@ namespace UnitTests
                 var eyev = Vector(0, -MathF.Sqrt(2) / 2.0f, -MathF.Sqrt(2) / 2.0f);
                 var normalv = Vector(0, 0, -1);
                 var light = new PointLight(Point(0, 10, -10), Color(1,1,1));
-                var result = m.Lighting(light, position, eyev, normalv, false);
+                var result = m.Lighting(light, position, eyev, normalv, false, new Sphere());
                 Assert.IsTrue(result == Color(1.6363853f,1.6363853f,1.6363853f));
             }
 
@@ -1622,7 +1626,7 @@ namespace UnitTests
                 var eyev = Vector(0, 0, 1);
                 var normalv = Vector(0, 0, -1);
                 var light = new PointLight(Point(0, 0, 10), Color(1, 1, 1));
-                var result = m.Lighting(light, position, eyev, normalv, false);
+                var result = m.Lighting(light, position, eyev, normalv, false, new Sphere());
                 Assert.IsTrue(result == Color(0.1f,0.1f,0.1f));
             }
         }
@@ -1665,7 +1669,7 @@ namespace UnitTests
                         var point = r.Position(hit.t);
                         var normal = hit.Object.NormalAt(point);
                         var eye = -r.Direction;
-                        var color = hit.Object.Material.Lighting(light, point, eye, normal, false);
+                        var color = hit.Object.Material.Lighting(light, point, eye, normal, false, new Sphere());
                         canvas[x, y] = color;
                     }
                 }
@@ -2001,7 +2005,7 @@ namespace UnitTests
             var normalv = Vector(0, 0, -1);
             var light = new PointLight(Point(0, 0, -10), Color(1, 1, 1));
             var inShadow = true;
-            var result = m.Lighting(light, position, eyev, normalv, inShadow);
+            var result = m.Lighting(light, position, eyev, normalv, inShadow, new Sphere());
             Assert.IsTrue(result == Color(0.1f, 0.1f, 0.1f));
         }
 
@@ -2075,6 +2079,280 @@ namespace UnitTests
             var comps = i.PrepareComputations(r);
             Assert.IsTrue(comps.OverPoint.Z < -EPSILON/2.0f);
             Assert.IsTrue(comps.Point.Z > comps.OverPoint.Z);
+        }
+
+        /// <summary>
+        /// The default transformation
+        /// Assigning a transformation
+        /// The default Material
+        /// Assigning a material
+        /// </summary>
+        [Test]
+        public void TestShape()
+        {
+            var s = new TestShape();
+            Assert.IsTrue(s.Transform == Identity);
+
+            s.Transform = Translation(2, 3, 4);
+            Assert.IsTrue(s.Transform == Translation(2,3,4));
+
+            var m = s.Material;
+            Assert.IsTrue(m == new Material());
+
+            m.Ambient = 1;
+            s.Material = m;
+            Assert. IsTrue(s.Material == m);
+        }
+
+        /// <summary>
+        /// Tests to make sure conversion from Sphere into Shape is successful
+        /// </summary>
+        [Test]
+        public void ShapeIsSphere()
+        {
+            var s = new Sphere();
+            
+            Assert.IsTrue(s is Shape);
+        }
+
+        /// <summary>
+        /// The normal of a plane is constant everywhere
+        /// </summary>
+        [Test]
+        public void NormalOfPlane()
+        {
+            var p = new Plane();
+            var n1 = p.NormalAt(Point(0, 0, 0));
+            var n2 = p.NormalAt(Point(10, 0, -10));
+            var n3 = p.NormalAt(Point(-5, 0, 150));
+            Assert.IsTrue(n1 == Vector(0, 1, 0));
+            Assert.IsTrue(n2 == Vector(0, 1, 0));
+            Assert.IsTrue(n3 == Vector(0, 1, 0));
+        }
+
+        /// <summary>
+        /// Intersect with a ray parallel to the plane
+        /// </summary>
+        [Test]
+        public void IntersectPlaneParallel()
+        {
+            var p = new Plane();
+            var r = new Ray(Point(0, 10, 0), Vector(0, 0, 1));
+            var xs = p.Intersect(r);
+            Assert.IsTrue(xs.Length == 0);
+        }
+        
+        /// <summary>
+        /// Intersect with a coplanar ray
+        /// </summary>
+        [Test]
+        public void IntersectPlaneCoplanar()
+        {
+            var p = new Plane();
+            var r = new Ray(Point(0, 0, 0), Vector(0, 0, 1));
+            var xs = p.Intersect(r);
+            Assert.IsTrue(xs.Length == 0);
+        }
+
+        /// <summary>
+        /// A ray intersecting a plane from above
+        /// </summary>
+        [Test]
+        public void IntersectPlaneAbove()
+        {
+            var p = new Plane();
+            var r = new Ray(Point(0, 1, 0), Vector(0, -1, 0));
+            var xs = p.Intersect(r);
+            Assert.IsTrue(xs.Length == 1);
+            Assert.IsTrue(Math.Abs(xs[0].t - 1) < EPSILON);
+            Assert.IsTrue(xs[0].Object == p);
+        }
+        
+        /// <summary>
+        /// A ray intersecting a plane from below
+        /// </summary>
+        [Test]
+        public void IntersectPlaneBelow()
+        {
+            var p = new Plane();
+            var r = new Ray(Point(0, -1, 0), Vector(0, 1, 0));
+            var xs = p.Intersect(r);
+            Assert.IsTrue(xs.Length == 1);
+            Assert.IsTrue(Math.Abs(xs[0].t - 1) < EPSILON);
+            Assert.IsTrue(xs[0].Object == p);
+        }
+
+        /// <summary>
+        /// Putting it together Chapter 9
+        /// </summary>
+        [Test]
+        public void RenderingPlane()
+        {
+            var floor = new Plane()
+            {
+                Material = new Material
+                {
+                    Color = Color(1, 0.9f, 0.9f),
+                    Specular = 0
+                }
+            };
+            var middle = new Sphere
+            {
+                Transform = Translation(-0.5f, 1, 0.5f) * Scaling(1,1,1),
+                Material = new Material
+                {
+                    Color = Color(244/255.0f, 97/255.0f, 0),
+                    Diffuse = 0.7f,
+                    Specular = 0.3f
+                }
+            };
+
+            var right = new Sphere
+            {
+                Transform = Translation(1.5f, 0.5f, -0.5f) * Scaling(0.5f, 0.5f, 0.5f),
+                Material = new Material
+                {
+                    Color = Color(0.5f, 1, 0.1f),
+                    Diffuse = 0.7f,
+                    Specular = 0.3f
+                }
+            };
+
+            var left = new Sphere
+            {
+                Transform = Translation(-1.5f, 0, -0.75f) * Scaling(0.33f, 0.33f, 0.33f),
+                Material = new Material
+                {
+                    Color = Color(1f, 0.8f, 0.1f),
+                    Diffuse = 0.7f,
+                    Specular = 0.3f
+                }
+            };
+
+            var w = new World(new PointLight(Point(-10, 10, -10), Color(1, 0.9f, 1)), floor, middle, left, right);
+            var c = new Camera(192, 108, PI / 3)
+            {
+                Transform = ViewTransformation(Point(0,1.5f, -5), Point(0,1,0), Vector(0,1,0))
+            };
+
+            var image = c.Render(w);
+            image.SaveToFile("img/Chapter9.png");
+        }
+
+        /// <summary>
+        /// Creating a stripe pattern
+        /// </summary>
+        [Test]
+        public void CreateStripePattern()
+        {
+            var pattern = new StripePattern(Color.White, Color.Black);
+            Assert.IsTrue(pattern.A == Color.White);
+            Assert.IsTrue(pattern.B == Color.Black);
+        }
+
+        /// <summary>
+        /// A stripe pattern is constant in y
+        /// </summary>
+        [Test]
+        public void StripePatternY()
+        {
+            var pattern = new StripePattern(Color.White, Color.Black);
+            Assert.IsTrue(pattern.StripeAt(Point(0,0,0)) == Color.White);
+            Assert.IsTrue(pattern.StripeAt(Point(0,1,0)) == Color.White);
+            Assert.IsTrue(pattern.StripeAt(Point(0,2,0)) == Color.White);
+        }
+        
+        /// <summary>
+        /// A stripe pattern is constant in z
+        /// </summary>
+        [Test]
+        public void StripePatternZ()
+        {
+            var pattern = new StripePattern(Color.White, Color.Black);
+            Assert.IsTrue(pattern.StripeAt(Point(0,0,0)) == Color.White);
+            Assert.IsTrue(pattern.StripeAt(Point(0,0,1)) == Color.White);
+            Assert.IsTrue(pattern.StripeAt(Point(0,0,2)) == Color.White);
+        }
+        
+        /// <summary>
+        /// A stripe pattern alternates in x
+        /// </summary>
+        [Test]
+        public void StripePatternX()
+        {
+            var pattern = new StripePattern(Color.White, Color.Black);
+            Assert.IsTrue(pattern.StripeAt(Point(0,0,0)) == Color.White);
+            Assert.IsTrue(pattern.StripeAt(Point(0.9f,0,0)) == Color.White);
+            Assert.IsTrue(pattern.StripeAt(Point(1,0,0)) == Color.Black);
+            Assert.IsTrue(pattern.StripeAt(Point(-0.1f,0,0)) == Color.Black);
+            Assert.IsTrue(pattern.StripeAt(Point(-1f,0,0)) == Color.Black);
+            Assert.IsTrue(pattern.StripeAt(Point(-1.1f,0,0)) == Color.White);
+        }
+
+        /// <summary>
+        /// Lighting with a pattern applied
+        /// </summary>
+        [Test]
+        public void LightingWithPattern()
+        {
+            var m = new Material();
+            m.Pattern = new StripePattern(Color.White, Color.Black);
+            m.Ambient = 1;
+            m.Diffuse = 0;
+            m.Specular = 0;
+            var eyeV = Vector(0, 0, -1);
+            var normalV = Vector(0, 0, -1);
+            var light = new PointLight(Point(0, 0, -10), Color.White);
+
+            var c1 = m.Lighting(light, Point(0.9f, 0, 0), eyeV, normalV, false, new Sphere());
+            var c2 = m.Lighting(light, Point(1.1f, 0, 0), eyeV, normalV, false, new Sphere());
+            
+            Assert.IsTrue(c1 == Color.White);
+            Assert.IsTrue(c2 == Color.Black);
+        }
+
+        /// <summary>
+        /// Stripes with an object transformation
+        /// </summary>
+        [Test]
+        public void StripeObjectTransformation()
+        {
+            var obj = new Sphere();
+            obj.Transform = Scaling(2, 2, 2);
+            var pattern = new StripePattern(Color.White, Color.Black);
+
+            var c = pattern.StripeAtObject(obj, Point(1.5f, 0, 0));
+            Assert.IsTrue(c == Color.White);
+        }
+
+        /// <summary>
+        /// Stripes with a pattern transformation
+        /// </summary>
+        [Test]
+        public void StripesPatternTransformation()
+        {
+            
+            var obj = new Sphere();
+            var pattern = new StripePattern(Color.White, Color.Black);
+            pattern.Transform = Scaling(2, 2, 2);
+
+            var c = pattern.StripeAtObject(obj, Point(1.5f, 0, 0));
+            Assert.IsTrue(c == Color.White);
+        }
+
+        /// <summary>
+        /// Stripes with both an object and a pattern transformation
+        /// </summary>
+        [Test]
+        public void StripesPatternAndObjectTransformation()
+        {
+            var obj = new Sphere();
+            obj.Transform = Scaling(2, 2, 2);
+            var pattern = new StripePattern(Color.White, Color.Black);
+            pattern.Transform = Translation(0.5f, 0, 0);
+
+            var c = pattern.StripeAtObject(obj, Point(2.5f, 0, 0));
+            Assert.IsTrue(c == Color.White);
         }
     }
 }
