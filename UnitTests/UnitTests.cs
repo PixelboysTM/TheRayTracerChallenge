@@ -2257,9 +2257,9 @@ namespace UnitTests
         public void StripePatternY()
         {
             var pattern = new StripePattern(Color.White, Color.Black);
-            Assert.IsTrue(pattern.StripeAt(Point(0,0,0)) == Color.White);
-            Assert.IsTrue(pattern.StripeAt(Point(0,1,0)) == Color.White);
-            Assert.IsTrue(pattern.StripeAt(Point(0,2,0)) == Color.White);
+            Assert.IsTrue(pattern.PatternAt(Point(0,0,0)) == Color.White);
+            Assert.IsTrue(pattern.PatternAt(Point(0,1,0)) == Color.White);
+            Assert.IsTrue(pattern.PatternAt(Point(0,2,0)) == Color.White);
         }
         
         /// <summary>
@@ -2269,9 +2269,9 @@ namespace UnitTests
         public void StripePatternZ()
         {
             var pattern = new StripePattern(Color.White, Color.Black);
-            Assert.IsTrue(pattern.StripeAt(Point(0,0,0)) == Color.White);
-            Assert.IsTrue(pattern.StripeAt(Point(0,0,1)) == Color.White);
-            Assert.IsTrue(pattern.StripeAt(Point(0,0,2)) == Color.White);
+            Assert.IsTrue(pattern.PatternAt(Point(0,0,0)) == Color.White);
+            Assert.IsTrue(pattern.PatternAt(Point(0,0,1)) == Color.White);
+            Assert.IsTrue(pattern.PatternAt(Point(0,0,2)) == Color.White);
         }
         
         /// <summary>
@@ -2281,12 +2281,12 @@ namespace UnitTests
         public void StripePatternX()
         {
             var pattern = new StripePattern(Color.White, Color.Black);
-            Assert.IsTrue(pattern.StripeAt(Point(0,0,0)) == Color.White);
-            Assert.IsTrue(pattern.StripeAt(Point(0.9f,0,0)) == Color.White);
-            Assert.IsTrue(pattern.StripeAt(Point(1,0,0)) == Color.Black);
-            Assert.IsTrue(pattern.StripeAt(Point(-0.1f,0,0)) == Color.Black);
-            Assert.IsTrue(pattern.StripeAt(Point(-1f,0,0)) == Color.Black);
-            Assert.IsTrue(pattern.StripeAt(Point(-1.1f,0,0)) == Color.White);
+            Assert.IsTrue(pattern.PatternAt(Point(0,0,0)) == Color.White);
+            Assert.IsTrue(pattern.PatternAt(Point(0.9f,0,0)) == Color.White);
+            Assert.IsTrue(pattern.PatternAt(Point(1,0,0)) == Color.Black);
+            Assert.IsTrue(pattern.PatternAt(Point(-0.1f,0,0)) == Color.Black);
+            Assert.IsTrue(pattern.PatternAt(Point(-1f,0,0)) == Color.Black);
+            Assert.IsTrue(pattern.PatternAt(Point(-1.1f,0,0)) == Color.White);
         }
 
         /// <summary>
@@ -2321,7 +2321,7 @@ namespace UnitTests
             obj.Transform = Scaling(2, 2, 2);
             var pattern = new StripePattern(Color.White, Color.Black);
 
-            var c = pattern.StripeAtObject(obj, Point(1.5f, 0, 0));
+            var c = pattern.PatternAtObject(obj, Point(1.5f, 0, 0));
             Assert.IsTrue(c == Color.White);
         }
 
@@ -2336,7 +2336,7 @@ namespace UnitTests
             var pattern = new StripePattern(Color.White, Color.Black);
             pattern.Transform = Scaling(2, 2, 2);
 
-            var c = pattern.StripeAtObject(obj, Point(1.5f, 0, 0));
+            var c = pattern.PatternAtObject(obj, Point(1.5f, 0, 0));
             Assert.IsTrue(c == Color.White);
         }
 
@@ -2351,8 +2351,72 @@ namespace UnitTests
             var pattern = new StripePattern(Color.White, Color.Black);
             pattern.Transform = Translation(0.5f, 0, 0);
 
-            var c = pattern.StripeAtObject(obj, Point(2.5f, 0, 0));
+            var c = pattern.PatternAtObject(obj, Point(2.5f, 0, 0));
             Assert.IsTrue(c == Color.White);
+        }
+
+        /// <summary>
+        /// A gradient linearly interpolates between colors
+        /// </summary>
+        [Test]
+        public void GradientPattern()
+        {
+            var pattern = new GradientPattern(Color.White, Color.Black);
+            Assert.IsTrue(pattern.PatternAt(Point(0,0,0)) == Color.White);
+            
+            Assert.IsTrue(pattern.PatternAt(Point(0.25f,0,0)) == Color(0.75f, 0.75f, 0.75f));
+            Assert.IsTrue(pattern.PatternAt(Point(0.5f,0,0)) == Color(0.5f, 0.5f, 0.5f));
+            Assert.IsTrue(pattern.PatternAt(Point(0.75f,0,0)) == Color(0.25f, 0.25f, 0.25f));
+        }
+
+        /// <summary>
+        /// A ring should extend in both x and z
+        /// </summary>
+        [Test]
+        public void RingPattern()
+        {
+            var pattern = new RingPattern(Color.White, Color.Black);
+            
+            Assert.IsTrue(pattern.PatternAt(Point(0,0,0)) == Color.White);
+            Assert.IsTrue(pattern.PatternAt(Point(1,0,0)) == Color.Black);
+            Assert.IsTrue(pattern.PatternAt(Point(0,0,1)) == Color.Black);
+            Assert.IsTrue(pattern.PatternAt(Point(0.708f,0,0.708f)) == Color.Black);
+        }
+
+        /// <summary>
+        /// Checkers should repeat in x
+        /// </summary>
+        [Test]
+        public void CheckerPatternX()
+        {
+            Pattern pattern = new CheckerPattern(Color.White, Color.Black);
+            Assert.IsTrue(pattern.PatternAt(Point(0,0,0)) == Color.White);
+            Assert.IsTrue(pattern.PatternAt(Point(0.99f,0,0)) == Color.White);
+            Assert.IsTrue(pattern.PatternAt(Point(1.01f,0,0)) == Color.Black);
+        }
+        
+        /// <summary>
+        /// Checkers should repeat in y
+        /// </summary>
+        [Test]
+        public void CheckerPatternY()
+        {
+            Pattern pattern = new CheckerPattern(Color.White, Color.Black);
+            Assert.IsTrue(pattern.PatternAt(Point(0,0,0)) == Color.White);
+            Assert.IsTrue(pattern.PatternAt(Point(0,0.99f,0)) == Color.White);
+            Assert.IsTrue(pattern.PatternAt(Point(0,1.01f,0)) == Color.Black);
+        }
+        
+        /// <summary>
+        /// Checkers should repeat in z
+        /// </summary>
+        [Test]
+        public void CheckerPatternZ()
+        {
+            Pattern pattern = new CheckerPattern(Color.White, Color.Black);
+            Assert.IsTrue(pattern.PatternAt(Point(0,0,0)) == Color.White);
+            Assert.IsTrue(pattern.PatternAt(Point(0,0,0.99f)) == Color.White);
+            Assert.IsTrue(pattern.PatternAt(Point(0,0,1.01f)) == Color.Black);
         }
     }
 }

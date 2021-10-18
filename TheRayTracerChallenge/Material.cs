@@ -13,7 +13,7 @@ namespace TheRayTracerChallenge
         public float Diffuse { get; set; } = 0.9f;
         public float Specular { get; set; } = 0.9f;
         public float Shininess { get; set; } = 200f;
-        public StripePattern Pattern { get; set; } = null;
+        public Pattern.Pattern Pattern { get; set; } = null;
 
         public Material Copy => new()
             { Ambient = Ambient, Color = Color.Copy, Diffuse = Diffuse, Shininess = Shininess, Specular = Specular };
@@ -58,7 +58,7 @@ namespace TheRayTracerChallenge
         {
             Tuple color;
             if (Pattern is not null)
-                color = Pattern.StripeAtObject(obj,point);
+                color = Pattern.PatternAtObject(obj,point);
             else
                 color = Color;
             

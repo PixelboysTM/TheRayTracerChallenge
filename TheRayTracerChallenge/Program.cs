@@ -5,6 +5,7 @@ using TheRayTracerChallenge.Lights;
 using TheRayTracerChallenge.Math;
 using TheRayTracerChallenge.Pattern;
 using TheRayTracerChallenge.Shapes;
+using Canvas = TheRayTracerChallenge.Util.Canvas;
 using Tuple = TheRayTracerChallenge.Math.Tuple;
 
 namespace TheRayTracerChallenge
@@ -18,8 +19,8 @@ namespace TheRayTracerChallenge
             Console.OutputEncoding = Encoding.UTF8;
             AnsiConsole.Clear();
 
-            StripePattern pattern = new StripePattern(Tuple.Color(1, 0, 0), Tuple.Color(0, 1, 0));
-            pattern.Transform = Matrix4x4.Scaling(0.5f,1.25f,0.5f);
+            Pattern.Pattern pattern = new RadialGradient(Tuple.Color(1, 0, 0), Tuple.Color(0, 1, 0));
+            // pattern.Transform = Matrix4x4.RotationZ(45.ToRad()) * Matrix4x4.Scaling(0.2f,0.1f,0.3f);
 
             var floor = new Plane("Floor")
             {
@@ -45,7 +46,7 @@ namespace TheRayTracerChallenge
 
             var middle = new Sphere("middle")
             {
-                Transform = Matrix4x4.Translation(-0.5f, 1, 0.5f) * Matrix4x4.Scaling(1,0.5f,0.5f),
+                Transform = Matrix4x4.Translation(-0.5f, 1, 0.5f) * Matrix4x4.Scaling(2,2,2),
                 Material = new Material
                 {
                     Color = Tuple.Color(0.1f, 1, 0.5f),
@@ -75,7 +76,7 @@ namespace TheRayTracerChallenge
                     Color = Tuple.Color(1f, 0.8f, 0.1f),
                     Diffuse = 0.7f,
                     Specular = 0.3f,
-                    Pattern = pattern
+                    // Pattern = pattern
                 }
             };
 
@@ -91,23 +92,25 @@ namespace TheRayTracerChallenge
            
                 DateTime start = DateTime.Now;
                 
-                var s = c.RenderCo(w);
-                AnsiConsole.Progress()
-                    .HideCompleted(true)
-                    .Columns(
-                    new TaskDescriptionColumn(), new ProgressBarColumn(), new PercentageColumn(),
-                    new ElapsedTimeColumn(), new RemainingTimeColumn(), new SpinnerColumn(Spinner.Known.Dots)).Start(
-                    ctx =>
-                    {
-                        var task = ctx.AddTask("Rendering Progress");
-                        while (s.MoveNext())
-                        {
-                            task.Increment(s.Current.Item1);
-                        }
-                    });
+                //Sync
+                // var s = c.RenderCo(w);
+                // AnsiConsole.Progress()
+                //     .HideCompleted(true)
+                //     .Columns(
+                //     new TaskDescriptionColumn(), new ProgressBarColumn(), new PercentageColumn(),
+                //     new ElapsedTimeColumn(), new RemainingTimeColumn(), new SpinnerColumn(Spinner.Known.Clock)).Start(
+                //     ctx =>
+                //     {
+                //         var task = ctx.AddTask("Rendering Progress");
+                //         while (s.MoveNext())
+                //         {
+                //             task.Increment(s.Current.Item1);
+                //         }
+                //     });
+                // var image = s.Current.Item2;
                 
-                
-                var image = s.Current.Item2;
+                //Asny
+                Canvas image = c.RenderAsync(w, 6, 50);
                 DateTime end = DateTime.Now;
                 var span = end.Subtract(start);
                 AnsiConsole.WriteLine("Finished Rendering in: " + new DateTime(2004,1,1,span.Hours, span.Minutes, span.Seconds) .ToString("HH:mm:ss"));
@@ -116,8 +119,8 @@ namespace TheRayTracerChallenge
                 {
                 ctx.Status = "Saving";
                 ctx.Spinner = Spinner.Known.Pong;
-                image.SaveToFile("img/Chapter10_2.png");
-            });
+                image.SaveToFile("img/Chapter10_Checker.png");
+                });
             AnsiConsole.WriteLine("Finished ✔");
         }
     }

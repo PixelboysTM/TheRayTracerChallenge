@@ -1,4 +1,9 @@
-﻿using TheRayTracerChallenge.Math;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Spectre.Console;
+using Canvas = TheRayTracerChallenge.Util.Canvas;
+using Tuple = TheRayTracerChallenge.Math.Tuple;
 
 namespace TheRayTracerChallenge
 {
@@ -37,6 +42,27 @@ namespace TheRayTracerChallenge
                 return 1;
 
             return 0;
+        }
+
+        public static int WaitAny(this Task<ValueTuple<Canvas, Tuple>>[] tasks, CancellationToken token = new())
+        {
+            
+            while (!token.IsCancellationRequested)
+            {
+                for (int i = 0; i < tasks.Length; i++)
+                {
+                    if (tasks[i] is not null && tasks[i].IsCompleted)
+                        return i;
+                }
+                Thread.Sleep(100);
+            }
+
+            return -1;
+        }
+
+        public static float ToRad(this int degree)
+        {
+            return degree * Tuple.PI / 180.0f;
         }
     }
 }
